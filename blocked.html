@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Blocked</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div style="max-width:720px;margin:40px auto;padding:18px;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.08);background:#fff;font-family:Arial,Helvetica,sans-serif">
+    <h1 style="margin:0 0 8px">Blocked</h1>
+    <p id="reason">This content has been blocked by the extension.</p>
+    <p><strong>Attempted URL:</strong> <span id="original">unknown</span></p>
+    <p><strong>Type:</strong> <span id="type">unknown</span></p>
+    <div style="margin-top:12px">
+      <button id="goBack">Go back</button>
+      <button id="openDashboard">Open dashboard</button>
+    </div>
+  </div>
+
+  <script>
+    function qs(name) { const u = new URL(location.href); return u.searchParams.get(name); }
+    const original = decodeURIComponent(qs('url') || '');
+    const type = decodeURIComponent(qs('type') || '');
+    const words = (() => { try { return JSON.parse(decodeURIComponent(qs('words')||"[]")); } catch(e){ return []; }})();
+
+    document.getElementById('original').textContent = original || 'unknown';
+    document.getElementById('type').textContent = type || 'site';
+    const reasonP = document.getElementById('reason');
+    if (type === 'site') reasonP.textContent = `Access to this site is blocked.`;
+    else reasonP.textContent = `Blocked content - matched words: ${words.join(', ')}`;
+
+    // ensure background log (defensive)
+    chrome.runtime.sendMessage({ type: 'logAttempt', entry: { url: original || location.href, type: type || 'site', reason: 'redirected', details: { words } } });
+
+    document.getElementById('goBack').addEventListener('click', () => history.back());
+    document.getElementById('openDashboard').addEventListener('click', () => chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html') }));
+  </script>
+</body>
+</html>

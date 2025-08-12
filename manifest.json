@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "Smart Keyword Blocker",
+  "version": "1.0",
+  "description": "Blocks websites instantly when blocked keywords are typed (real-time detection + navigation blocking).",
+  "permissions": [
+    "storage",
+    "tabs",
+    "scripting",
+    "webNavigation"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Website Blocker"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["contentScript.js"],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["blocked.html", "styles.css"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

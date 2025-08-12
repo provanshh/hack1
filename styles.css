@@ -1,0 +1,9 @@
+body { font-family: Arial, Helvetica, sans-serif; margin: 12px; color: #111; }
+.blocked-card, .dashboard, .popup { max-width: 760px; margin: 10px auto; }
+.blocked-card { padding: 18px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.12); background:#fff; text-align:left; }
+.actions { margin-top: 12px; }
+button { padding: 8px 12px; margin-right:8px; border-radius:6px; cursor:pointer; }
+table { width: 100%; border-collapse: collapse; margin-top:12px; }
+table th, table td { border:1px solid #eee; padding:8px; text-align:left; font-size:13px; }
+.controls { margin-bottom:8px; }
+textarea { width:100%; font-family:monospace; box-sizing:border-box; }

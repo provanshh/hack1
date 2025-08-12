@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Blocker Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="dashboard">
+    <h1>Blocked Attempts</h1>
+    <div class="controls">
+      <button id="refresh">Refresh</button>
+      <button id="export">Export CSV</button>
+      <button id="clear">Clear Logs</button>
+    </div>
+    <table id="logsTable">
+      <thead>
+        <tr><th>Time</th><th>Type</th><th>URL</th><th>Reason / Details</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    function timeStr(ts) {
+      const d = new Date(ts);
+      return d.toLocaleString();
+    }
+
+    async function loadLogs() {
+      const data = await chrome.storage.local.get("blockerLogs");
+      const logs = data.blockerLogs || [];
+      const tbody = document.querySelector('#logsTable tbody');
+      tbody.innerHTML = '';
+      for (const l of logs) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${timeStr(l.time)}</td>
+                        <td>${l.type || ''}</td>
+                        <td><a href="${l.url}" target="_blank" rel="noopener noreferrer">${l.url}</a></td>
+                        <td>${(l.reason || '')} ${l.details ? JSON.stringify(l.details) : ''}</td>`;
+        tbody.appendChild(tr);
+      }
+    }
+
+    document.getElementById('refresh').addEventListener('click', loadLogs);
+    document.getElementById('clear').addEventListener('click', async () => {
+      await chrome.runtime.sendMessage({ type: 'clearLogs' });
+      loadLogs();
+    });
+    document.getElementById('export').addEventListener('click', async () => {
+      const data = await chrome.storage.local.get("blockerLogs");
+      const logs = data.blockerLogs || [];
+      const csvRows = [["time","type","url","reason","details"]];
+      for (const l of logs) {
+        csvRows.push([new Date(l.time).toISOString(), l.type||"", `"${(l.url||"").replace(/"/g,'""')}"`, `"${(l.reason||"").replace(/"/g,'""')}"`, `"${JSON.stringify(l.details||{}).replace(/"/g,'""')}"`]);
+      }
+      const csv = csvRows.map(r => r.join(",")).join("\n");
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'blocker-logs.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    // initial load
+    loadLogs();
+  </script>
+</body>
+</html>
